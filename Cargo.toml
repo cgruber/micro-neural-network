@@ -1,0 +1,15 @@
+[workspace]
+resolver = "2"
+
+members = [
+    "rust/bracketslib",
+]
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.85.0"
+readme = "README.md"
+
+[workspace.dependencies]
+assertor = { version = "*", features = ["anyhow"] }
+thiserror = "2.0.11"
