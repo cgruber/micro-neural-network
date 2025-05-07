@@ -1,0 +1,11 @@
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_test")
+
+kt_jvm_test(
+    name = "LibOcrTest",
+    srcs = glob(["LibOcrTest.kt"]),
+    associates = ["//kotlin/simple_ocr/src/main/kotlin/me/cgruber/dl/ocr:ocr_lib"],
+    deps = [
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+    ],
+)
