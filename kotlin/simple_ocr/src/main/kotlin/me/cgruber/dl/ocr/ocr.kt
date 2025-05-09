@@ -9,11 +9,19 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import java.io.File
 import org.jetbrains.kotlinx.dl.api.core.Sequential
+import org.jetbrains.kotlinx.dl.api.core.WritingMode
 import org.jetbrains.kotlinx.dl.api.core.layer.core.Dense
 import org.jetbrains.kotlinx.dl.api.core.layer.core.Input
 import org.jetbrains.kotlinx.dl.api.core.layer.reshaping.Flatten
+import org.jetbrains.kotlinx.dl.api.core.loss.Losses
+import org.jetbrains.kotlinx.dl.api.core.metric.Metrics
+import org.jetbrains.kotlinx.dl.api.core.optimizer.Adam
 import org.jetbrains.kotlinx.dl.api.inference.TensorFlowInferenceModel
+import org.jetbrains.kotlinx.dl.api.summary.printSummary
+import org.jetbrains.kotlinx.dl.dataset.OnHeapDataset
 import org.jetbrains.kotlinx.dl.dataset.embedded.fashionMnist
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
 
 class Ocr : CliktCommand(name = "ocr") {
   override fun run() {}
@@ -27,8 +35,7 @@ class Train : CliktCommand() {
       .default(File("models/my.model"))
 
   override fun run() {
-    echo("Testing Train")
-    if (true) throw ProgramResult(0)
+    echo("Training model")
     val (training, test) = fashionMnist(dir)
     val model =
       Sequential.of(
@@ -39,22 +46,48 @@ class Train : CliktCommand() {
         Dense(50),
         Dense(10),
       )
-    TensorFlowInferenceModel.load(modelFile).use {
-      it.reshape(28, 28, 1)
-      val prediction = it.predict(test.getX(0))
-      val actualLabel = test.getY(0)
-      println(
-        "Predicted label is: $prediction. This corresponds to class ${stringLabels[prediction]}."
+    model.use {
+      it.compile(
+        optimizer = Adam(),
+        loss = Losses.SOFT_MAX_CROSS_ENTROPY_WITH_LOGITS,
+        metric = Metrics.ACCURACY
       )
-      println("Actual label is: $actualLabel.")
+      val buf = ByteArrayOutputStream()
+      it.printSummary(PrintStream(buf))
+      buf.flush()
+      echo(buf.toString())
+
+      // You can think of the training process as "fitting" the model to describe the given data :)
+      it.fit(
+        dataset = training,
+        epochs = 10,
+        batchSize = 100
+      )
+
+      val accuracy = it.evaluate(dataset = test, batchSize = 100).metrics[Metrics.ACCURACY]
+
+      echo("Accuracy: $accuracy")
+      it.save(modelFile, writingMode = WritingMode.OVERRIDE)
     }
   }
 }
 
 class Run : CliktCommand() {
   override fun run() {
-    echo("Testing Run")
-    if (true) throw ProgramResult(0)
+    echo("Loading testing data")
+    val (_, test: OnHeapDataset) = fashionMnist()
+
+    TensorFlowInferenceModel.load(File("model/my_model")).use {
+      it.reshape(28, 28, 1)
+
+      val prediction = it.predict(test.getX(0))
+      val actualLabel = test.getY(0)
+
+      println(
+        "Predicted label is: $prediction. This corresponds to class ${stringLabels[prediction]}."
+      )
+      println("Actual label is: $actualLabel.")
+    }
   }
 }
 
