@@ -24,7 +24,7 @@ maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
     artifacts = [
         "junit:junit:4.12",
-        "com.geekinasuit.micro:micro-kotlin-args:0.4",
+        "com.github.ajalt.clikt:clikt-jvm:5.0.1",
         "com.google.truth:truth:1.4.4",
         "com.google.protobuf:protobuf-java:4.29.3",
         "com.google.protobuf:protobuf-kotlin:4.29.3",

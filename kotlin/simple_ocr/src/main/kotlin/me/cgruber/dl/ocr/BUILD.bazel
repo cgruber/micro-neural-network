@@ -6,7 +6,7 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
     deps = [
-        "@maven//:com_geekinasuit_micro_micro_kotlin_args",
+        "@maven//:com_github_ajalt_clikt_clikt_jvm",
         "@maven//:org_jetbrains_kotlinx_kotlin_deeplearning_api",
         "@maven//:org_jetbrains_kotlinx_kotlin_deeplearning_dataset_jvm",
         "@maven//:org_jetbrains_kotlinx_kotlin_deeplearning_tensorflow",
